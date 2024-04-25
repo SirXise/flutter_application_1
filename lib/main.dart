@@ -62,7 +62,8 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
 
     // Gassian Blur
     var gassianBlur = img.gaussianBlur(resizedImage, radius: 0);
-    
+
+
     //sobel edge detecting
     var edgeDetected = img.sobel(gassianBlur);
 
