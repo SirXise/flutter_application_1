@@ -3,6 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_processing_contouring/Classes/Contour.dart';
+import 'package:image_processing_contouring/Image/ImageContouring.dart';
+import 'package:image_processing_contouring/Image/ImageDrawing.dart';
+import 'package:image_processing_contouring/Image/ImageManipulation.dart';
+import 'package:image_processing_contouring/Image/ImageOperation.dart';
 
 void main() {
   runApp(MyApp());
@@ -41,7 +47,7 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
     final imageData = await rootBundle.load('assets/sample_image.png');
     final List<int> bytes = Uint8List.view(imageData.buffer).toList();
     final img.Image loadedImage = img.decodeImage(Uint8List.fromList(bytes))!;
-    
+
     setState(() {
       originalImage = loadedImage;
       processedImage = preprocessImage(loadedImage);
@@ -51,30 +57,36 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
   //Can edit code here
 
   img.Image preprocessImage(img.Image image) {
-    // Resize image to desired dimensions
-    final resizedImage = img.copyResize(image, width: 300, height: 300);
+    // Resize the image
+    var resizedImage = img.copyResize(image, width: 300, height: 1000);
 
-    // Convert image to grayscale
-    final grayscaleImage = img.grayscale(resizedImage);
+    // Gassian Blur
+    var gassianBlur = img.gaussianBlur(resizedImage, radius: 0);
+    
+    //sobel edge detecting
+    var edgeDetected = img.sobel(gassianBlur);
 
-    // Apply sharpening filter (e.g., simple Laplacian)
-    final sharpenedImage = sharpenImage(grayscaleImage);
+    // Apply contour detection
+    List<Contour> contours = edgeDetected.detectContours();
 
-    return sharpenedImage;
+    // Draw contours on the image
+    var imageWithContours = drawContours(resizedImage, contours);
+
+    return imageWithContours;
   }
 
-  img.Image sharpenImage(img.Image image) {
-    // Create a sharpening kernel (e.g., simple Laplacian)
-    final List<int> kernel = [
-      0, -1, 0,
-      -1, 5, -1,
-      0, -1, 0,
-    ];
+  img.Image drawContours(img.Image image, List<Contour> contours) {
+    // Draw contours on a copy of the image
+    img.Image imageCopy = img.copyResize(image, width: image.width, height: image.height);
 
-    // Apply the kernel as a convolution filter
-    final sharpened = img.convolution(image, kernel);
+    // Draw contours on the image copy
+    for (var contour in contours) {
+      for (var point in contour.Points) {
+        imageCopy.setPixel(point.x.toInt(), point.y.toInt(), img.ColorInt16.rgb(255, 0, 0)); // Draw contour in red
+      }
+    }
 
-    return sharpened;
+    return imageCopy;
   }
 
   //end of editing code
@@ -93,8 +105,11 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Image.memory(Uint8List.fromList(img.encodeJpg(originalImage)), width: 200),
-                  Image.memory(Uint8List.fromList(img.encodeJpg(processedImage)), width: 200),
+                  Image.memory(Uint8List.fromList(img.encodeJpg(originalImage)),
+                      width: 200),
+                  Image.memory(
+                      Uint8List.fromList(img.encodeJpg(processedImage)),
+                      width: 200),
                 ],
               ),
             SizedBox(height: 20),
