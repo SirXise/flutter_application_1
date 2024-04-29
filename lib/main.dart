@@ -52,28 +52,54 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
   //Can edit code here
 
   img.Image preprocessImage(img.Image image) {
-    // Resize image to desired dimensions
-    final resizedImage = img.copyResize(image, width: 300, height: 300);
+    // Resize the image
+    print('Before Image width: ${image.width},Before height: ${image.height}');
 
-    // Convert image to grayscale
-    final grayscaleImage = img.grayscale(resizedImage);
+    int Dwidth = image.width * 3;
+    int Dheight = image.height * 3;
 
-    // Apply sharpening filter (e.g., simple Laplacian)
-    final sharpenedImage = sharpenImage(grayscaleImage);
+    var resizedImage = img.copyResize(image, width: Dwidth, height: Dheight);
 
-    return sharpenedImage;
+    print(
+        'After Image width: ${resizedImage.width},After height: ${resizedImage.height}');
+
+    // Gassian Blur
+    var gassianBlur = img.gaussianBlur(resizedImage, radius: 5);
+
+    print('After Gassian Blur Image width: ${gassianBlur.width},After height: ${gassianBlur.height}');
+
+    //sobel edge detecting
+    var edgeDetected = img.sobel(gassianBlur);
+
+    print('After Sobel Image width: ${edgeDetected.width},After height: ${edgeDetected.height}');
+
+    //Sharpen
+    var sharpened = sharpenImage(edgeDetected);
+
+    // Apply contour detection
+    //List<Contour> contours = edgeDetected.detectContours();
+
+    // Draw contours on the image
+    //var imageWithContours = drawContours(resizedImage, contours);
+
+    return sharpened;
   }
 
   img.Image sharpenImage(img.Image image) {
-    // Create a sharpening kernel (e.g., simple Laplacian)
-    final List<int> kernel = [
-      0, -1, 0,
-      -1, 5, -1,
-      0, -1, 0,
+    final List<num> kernel = [
+      0,
+      -1,
+      0,
+      -1,
+      5,
+      -1,
+      0,
+      -1,
+      0,
     ];
 
     // Apply the kernel as a convolution filter
-    final sharpened = img.convolution(image, kernel);
+    final sharpened = img.convolution(image, filter: kernel);
 
     return sharpened;
   }
@@ -110,8 +136,22 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Image.memory(Uint8List.fromList(img.encodeJpg(originalImage)), width: 200),
-                  Image.memory(Uint8List.fromList(img.encodeJpg(processedImage)), width: 200),
+                  // Display original image with its intrinsic width
+                  Image.memory(
+                    Uint8List.fromList(img.encodeJpg(originalImage)),
+                    width:
+                        originalImage.width.toDouble(), // Use intrinsic width
+                    height:
+                        originalImage.height.toDouble(), // Use intrinsic height
+                  ),
+                  // Display processed image with its intrinsic width
+                  Image.memory(
+                    Uint8List.fromList(img.encodeJpg(processedImage)),
+                    width:
+                        processedImage.width.toDouble(), // Use intrinsic width
+                    height: processedImage.height
+                        .toDouble(), // Use intrinsic height
+                  ),
                 ],
               ),
             SizedBox(height: 20),
