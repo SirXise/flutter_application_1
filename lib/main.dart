@@ -55,8 +55,8 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
     // Resize the image
     print('Before Image width: ${image.width},Before height: ${image.height}');
 
-    int Dwidth = image.width * 3;
-    int Dheight = image.height * 3;
+    int Dwidth = (image.width * 1.5).toInt();
+    int Dheight = (image.height * 1.5).toInt();
 
     var resizedImage = img.copyResize(image, width: Dwidth, height: Dheight);
 
