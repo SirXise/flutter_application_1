@@ -63,18 +63,39 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
     print(
         'After Image width: ${resizedImage.width},After height: ${resizedImage.height}');
 
-    // Gassian Blur
-    var gassianBlur = img.gaussianBlur(resizedImage, radius: 5);
+    //Greyscale
+    var greyscaleImage = img.grayscale(resizedImage);
 
-    print('After Gassian Blur Image width: ${gassianBlur.width},After height: ${gassianBlur.height}');
+    print('After Greyscale Image width: ${greyscaleImage.width},After height: ${greyscaleImage.height}');
+
+    // Gassian Blur
+    // var gassianBlur = img.gaussianBlur(resizedImage, radius: 5);
+
+    // print(
+    //     'After Gassian Blur Image width: ${gassianBlur.width},After height: ${gassianBlur.height}');
 
     //sobel edge detecting
-    var edgeDetected = img.sobel(gassianBlur);
+    // var edgeDetected = img.sobel(gassianBlur);
 
-    print('After Sobel Image width: ${edgeDetected.width},After height: ${edgeDetected.height}');
+    // print(
+    //     'After Sobel Image width: ${edgeDetected.width},After height: ${edgeDetected.height}');
+
+    // Uint8List resultImage = img.encodeJpg(edgeDetected);
+
+    // img.Image? decodedImage = img.decodeImage(Uint8List.fromList(resultImage))!;
+
+    // print('After decodeJpg Image width: ${decodedImage.width},After height: ${decodedImage.height}');
+
+    //Add Contrast
+    var enhancedImage = img.contrast(greyscaleImage, contrast: 2.0);
+
+    print('After Contrast Image width: ${enhancedImage.width},After height: ${enhancedImage.height}');
 
     //Sharpen
-    var sharpened = sharpenImage(edgeDetected);
+    //var sharpened = sharpenImage(edgeDetected);
+
+    //print(
+    //    'After Sharpening with Kernel Image width: ${sharpened.width},After height: ${sharpened.height}');
 
     // Apply contour detection
     //List<Contour> contours = edgeDetected.detectContours();
@@ -82,7 +103,7 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
     // Draw contours on the image
     //var imageWithContours = drawContours(resizedImage, contours);
 
-    return sharpened;
+    return enhancedImage;
   }
 
   img.Image sharpenImage(img.Image image) {
