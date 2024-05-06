@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
 import 'package:image_processing_contouring/Classes/Contour.dart';
+import 'package:image/src/util/math_util.dart';
 
 void main() {
   runApp(MyApp());
@@ -68,6 +69,9 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
 
     print('After Greyscale Image width: ${greyscaleImage.width},After height: ${greyscaleImage.height}');
 
+    //threshold
+    var thresholdedImage = threshold(greyscaleImage);
+    
     // Gassian Blur
     // var gassianBlur = img.gaussianBlur(resizedImage, radius: 5);
 
@@ -87,7 +91,7 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
     // print('After decodeJpg Image width: ${decodedImage.width},After height: ${decodedImage.height}');
 
     //Add Contrast
-    var enhancedImage = img.contrast(greyscaleImage, contrast: 2.0);
+    var enhancedImage = img.contrast(thresholdedImage, contrast: 2.0);
 
     print('After Contrast Image width: ${enhancedImage.width},After height: ${enhancedImage.height}');
 
@@ -104,6 +108,28 @@ class _ImageProcessingDemoState extends State<ImageProcessingDemo> {
     //var imageWithContours = drawContours(resizedImage, contours);
 
     return enhancedImage;
+  }
+
+  img.Image threshold(img.Image image) {
+    num threshold = 0.5;
+    //Image? mask;
+    for (final frame in image.frames) {
+      for (final p in frame) {
+         final y =
+             0.3 * p.rNormalized + 0.59 * p.gNormalized + 0.11 * p.bNormalized;
+        // final y =
+        //     0.2126 * p.rNormalized + 0.7152 * p.gNormalized + 0.0722 * p.bNormalized;
+
+        final y2 = y < threshold ? 0 : p.maxChannelValue;
+        //final msk = mask?.getPixel(p.x, p.y).getChannelNormalized(maskChannel);
+        //final mx = (msk ?? 1) * 1;
+        p
+          ..r = mix(p.r, y2, 1)
+          ..g = mix(p.g, y2, 1)
+          ..b = mix(p.b, y2, 1);
+      }
+    }
+    return image;
   }
 
   img.Image sharpenImage(img.Image image) {
